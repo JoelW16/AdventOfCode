@@ -6,45 +6,58 @@ namespace DayTwo
 {
     public class IntCodeComputer
     {
+        private int[] _intCodeProgram;
+        private int _instructionPointer;
+
         public int[] ReadInIntCodeProgram(string path){
             var lines = File.ReadLines(path).ToList();
             var intCodeProgram = lines?[0].Split(',').Select(i => Convert.ToInt32(i)).ToArray();
             return intCodeProgram;
         }
 
-        public int Run((int[] intCodeProgram, int pointer) program)
+        public int Run(int[] intCodeProgram, int instructionPointer)
         {
-            var intCodeProgram = program.intCodeProgram;
-            var programPointer = program.pointer;
-            var opcode = (Opcode) intCodeProgram[programPointer];
-            switch (opcode)
+            _intCodeProgram = intCodeProgram;
+            _instructionPointer = instructionPointer;
+
+            while (true)
             {
-                case Opcode.Add:
-                    program = Add(intCodeProgram, programPointer);
-                    break;
-                case Opcode.Multiply:
-                    program = Multiply(intCodeProgram, programPointer);
-                    break;
-                case Opcode.Halt:
-                    return intCodeProgram[0];
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var opcode = (Opcode) _intCodeProgram[_instructionPointer];
+                switch (opcode)
+                {
+                    case Opcode.Add:
+                        Add();
+                        break;
+                    case Opcode.Multiply:
+                        Multiply();
+                        break;
+                    case Opcode.Halt:
+                        return _intCodeProgram[0];
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
-            return Run(program);
         }
 
-        private (int[], int) Add(int[] intCodeProgram, int pointer)
+        private void Add()
         {
-            intCodeProgram[intCodeProgram[pointer + 3]] = intCodeProgram[intCodeProgram[pointer + 1]] + intCodeProgram[intCodeProgram[pointer + 2]];
-            pointer += 4;
-            return (intCodeProgram, pointer);
+            _intCodeProgram[GetPointer(_instructionPointer + 3)] = GetPointerValue(_instructionPointer + 1) + GetPointerValue(_instructionPointer + 2);
+            _instructionPointer += 4;
         }
 
-        private (int[], int) Multiply(int[] intCodeProgram, int pointer)
+        private void Multiply()
         {
-            intCodeProgram[intCodeProgram[pointer + 3]] = intCodeProgram[intCodeProgram[pointer + 1]] * intCodeProgram[intCodeProgram[pointer + 2]];
-            pointer += 4;
-            return (intCodeProgram, pointer);
+            _intCodeProgram[GetPointer(_instructionPointer + 3)] = GetPointerValue(_instructionPointer + 1) * GetPointerValue(_instructionPointer + 2);
+            _instructionPointer += 4;
+        }
+
+        private int GetPointer(int instructionPointer)
+        {
+            return _intCodeProgram[instructionPointer];
+        }
+
+        private int GetPointerValue(int instructionPointer){
+            return _intCodeProgram[_intCodeProgram[instructionPointer]];
         }
     }
 }

@@ -23,12 +23,11 @@ namespace DayTwo
             for(var i = 0 ; i < 100; i++){
                 for(var j = 0; j < 100; j++){
                     var intCodeProgramCopy = (int[])intCodeProgram.Clone();
+                    
                     intCodeProgramCopy[1] = i;
                     intCodeProgramCopy[2] = j;
 
-                    var program = (intCodeProgramCopy, 0);
-                    var returnValue = computer.Run(program);
-
+                    var returnValue = computer.Run(intCodeProgramCopy, 0);
                     if(returnValue == 19690720) return 100 * i + j;
                 }
             }
