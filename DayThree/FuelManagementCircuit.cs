@@ -7,7 +7,6 @@ namespace DayThree
 {
     public class FuelManagementCircuit
     {
-
         public static void Main(string[] args)
         {
             var projectDirectory =Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\"));
