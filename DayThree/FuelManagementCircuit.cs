@@ -82,9 +82,4 @@ namespace DayThree
             return intersects.Min(i => wire1[i] + wire2[i]);
         }
     }
-
-
-
-
-   
 }
