@@ -11,17 +11,20 @@ namespace DayFour
         
         public static void Main(string[] args)
         {
-            var numberOfPasswords = GetNumberOfPasswordsMatchesInRange(193651, 649729);
-            Console.WriteLine($"Passwords which match criteria: {numberOfPasswords}");
+            var numberOfPasswordsPart1 = GetNumberOfPasswordsMatchesInRange(193651, 649729, HasValidAdjacentDigits);
+            Console.WriteLine($"Passwords which match criteria part 1: {numberOfPasswordsPart1}");
+
+            var numberOfPasswordsPart2 = GetNumberOfPasswordsMatchesInRange(193651, 649729, HasTwoAdjacentDigits);
+            Console.WriteLine($"Passwords which match criteria part 2: {numberOfPasswordsPart2}");
         }
 
-        private static int GetNumberOfPasswordsMatchesInRange(int lower, int upper)
+        private static int GetNumberOfPasswordsMatchesInRange(int lower, int upper, Func<string, bool> isValid)
         {
             var possiblePasswords = new List<int>();
             for (var i = lower; i < upper; i++)
             {
                 var password = i.ToString();
-                if (IsSorted(password) && HasValidAdjacentDigits(password))
+                if (IsSorted(password) && isValid(password))
                 {
                     possiblePasswords.Add(i);
                 }
@@ -34,28 +37,14 @@ namespace DayFour
             return Regex.IsMatch(password, @"^(0*1*2*3*4*5*6*7*8*9*)$");
         }
 
-        private static bool HasValidAdjacentDigits(string password)
+        private static bool HasValidAdjacentDigits(string sortedPassword)
         {
-            var adjacentDigits = new List<(char digit, int count)>();
+            return sortedPassword.GroupBy(digit => digit).Count(c => c.Count() > 1) > 0;
+        }
 
-            foreach (var unit in password)
-            {
-                if (adjacentDigits.Count > 0 && adjacentDigits[^1].digit == unit)
-                {
-                    var lastAdjacent = adjacentDigits[^1];
-                    lastAdjacent.count++;
-                    adjacentDigits[^1] = lastAdjacent;
-                }
-                else
-                {
-                    adjacentDigits.Add((unit, 1));
-                }
-            }
-            //Part 1
-            //return adjacentDigits.Count(c => c.count > 1) > 0;
-
-            //Part 2
-            return adjacentDigits.Count(c => c.count == 2) > 0;
+        private static bool HasTwoAdjacentDigits(string sortedPassword)
+        {
+            return sortedPassword.GroupBy(digit => digit).Count(c => c.Count() == 2) > 0;
         }
 
     }
