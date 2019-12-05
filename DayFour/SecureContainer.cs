@@ -8,7 +8,6 @@ namespace DayFour
 {
     public class SecureContainer
     {
-        
         public static void Main(string[] args)
         {
             var numberOfPasswordsPart1 = GetNumberOfPasswordsMatchesInRange(193651, 649729, HasValidAdjacentDigits);
@@ -44,8 +43,7 @@ namespace DayFour
 
         private static bool HasTwoAdjacentDigits(string sortedPassword)
         {
-            return sortedPassword.GroupBy(digit => digit).Count(c => c.Count() == 2) > 0;
+            return sortedPassword.GroupBy(digit => digit).Count(c => c.Count() > 1) > 0;
         }
-
     }
 }
