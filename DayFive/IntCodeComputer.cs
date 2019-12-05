@@ -39,8 +39,20 @@ namespace DayFive
                     case Opcode.Output:
                         Output();
                         break;
+                    case Opcode.JumpTrue:
+                        JumpTrue();
+                        break;
+                    case Opcode.JumpFalse:
+                        JumpFalse();
+                        break;
+                    case Opcode.LessThan:
+                        LessThan();
+                        break;
+                    case Opcode.Equals:
+                        Equals();
+                        break;
                     case Opcode.Halt:
-                        return _intCodeProgram[0];
+                        return Halt();
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
@@ -76,6 +88,51 @@ namespace DayFive
         {
             Console.WriteLine(GetValue(1));
             _instructionPointer += 2;
+        }
+
+        private void JumpTrue()
+        {
+            if (GetValue(1) != 0)
+            {
+                _instructionPointer = GetValue(2);
+            }
+            else
+            {
+                _instructionPointer += 3;
+            }
+                
+        }
+
+        private void JumpFalse()
+        {
+            if (GetValue(1) == 0)
+            {
+                _instructionPointer = GetValue(2);
+            }
+            else
+            {
+                _instructionPointer += 3;
+            }
+                
+        }
+
+
+        private void LessThan()
+        {
+            SetValue(3, GetValue(1) < GetValue(2) ? 1 : 0);
+            _instructionPointer += 4;
+        }
+
+        private void Equals()
+        {
+            SetValue(3, GetValue(1) == GetValue(2) ? 1 : 0);
+            _instructionPointer += 4;
+        }
+
+
+        private int Halt()
+        {
+            return _intCodeProgram[0];
         }
 
         private void ReadInput(bool invalidInput = false)
