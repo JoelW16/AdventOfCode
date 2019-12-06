@@ -12,9 +12,16 @@ namespace DaySix
 
             var orbitMap = new OrbitMap();
 
-            var numberOfBodies = orbitMap.BuildOrbitMap(dataDirectory);
+            orbitMap.BuildOrbitMap(dataDirectory);
 
-            Console.WriteLine(numberOfBodies);
+            var numberOfOrbits = orbitMap.GetTotalNumberOfOrbits();
+            Console.WriteLine(numberOfOrbits);
+
+            var numberOfHops = orbitMap.NumberOfDijkstraHops("YOU", "SAN");
+
+            Console.WriteLine(numberOfHops);
+
+
         }
     }
 }
