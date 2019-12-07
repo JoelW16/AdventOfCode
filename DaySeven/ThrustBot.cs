@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace DaySeven
@@ -8,21 +10,60 @@ namespace DaySeven
     {
         public int Input { get; set; }
         public int Output { get; set; }
-        private int thrustOutput = 0;
-        private int inputNumber = 0;
-        private int _currentPhase;
-        private Dictionary<int, (int, int)> bestPhase;
+        private List<int[]> _phasePermutations;
+        
+        private int _thrustOutput;
+        private int _phase;
+        private int _inputNumber;
 
 
-        public void Run(IntCodeComputer computer, int[] program)
+
+        public int Run(IntCodeComputer computer, int[] program)
         {
-            bestPhase = new Dictionary<int, (int, int)>();
-            for (var i = 0; i < 6; i--)
+
+            _phasePermutations = new List<int[]>();
+            PhasePermute(new int[]{0, 1, 2, 3, 4}, 0, 4);
+
+            var thrust = new Dictionary<int[], int>();
+            foreach (var phasePermutation in _phasePermutations)
             {
-                for (var j = 0; j < 4; j++)
+                _thrustOutput = 0;
+                foreach (var phase in phasePermutation)
                 {
-                    _currentPhase = j;
+                    _inputNumber = 0;
+                    _phase = phase;
                     computer.Run(program, 0, this);
+
+                }
+                thrust.Add(phasePermutation, _thrustOutput);
+            }
+
+            return thrust.Max(i => i.Value);
+        }
+
+        private static int[] Swap(int[] phases, int indexA, int indexB)
+        {
+            var tmp = phases[indexA];
+            phases[indexA] = phases[indexB];
+            phases[indexB] = tmp;
+            return phases;
+        }
+
+        private void PhasePermute(int[] phases, int i, int n)
+        {
+            if (i == n)
+            {
+                var phasePerm = new int[phases.Length];
+                phases.CopyTo(phasePerm, 0);
+                _phasePermutations.Add(phasePerm);
+            }
+            else
+            {
+                for (var j = i; j <= n; j++)
+                {
+                    phases = Swap(phases, i, j);
+                    PhasePermute(phases, i + 1, n);
+                    phases = Swap(phases, i, j);
                 }
             }
         }
@@ -30,12 +71,14 @@ namespace DaySeven
 
         public int GetInput()
         {
-            switch (inputNumber)
+            switch (_inputNumber)
             {
                 case 0:
-                    return _currentPhase;
+                    _inputNumber = 1;
+                    return _phase;
                 case 1:
-                    return thrustOutput;
+                    _inputNumber = 0;
+                    return _thrustOutput;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -43,7 +86,7 @@ namespace DaySeven
 
         public void SetOutput(int output)
         {
-            thrustOutput = output;
+            _thrustOutput = output;
         }
 
     }

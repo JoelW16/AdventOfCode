@@ -10,7 +10,7 @@ namespace DaySeven
 
         int Output { get; set; }
 
-        void Run(IntCodeComputer computer, int[] program);
+        int Run(IntCodeComputer computer, int[] program);
 
         int GetInput();
 
