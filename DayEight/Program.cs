@@ -13,6 +13,9 @@ namespace DayEight
             var imageDecoder = new ImageDecoder(dataDirectory, 25, 6);
             var checkSum = imageDecoder.RunCheckSum();
             Console.WriteLine($"Image Transmission CheckSum:{checkSum}");
+
+            imageDecoder.DecodeImage();
+            imageDecoder.RenderImage();
         }
     }
 }
