@@ -129,7 +129,6 @@ namespace DaySeven
                 
         }
 
-
         private void LessThan()
         {
             SetValue(3, GetValue(1) < GetValue(2) ? 1 : 0);
