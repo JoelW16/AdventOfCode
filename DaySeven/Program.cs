@@ -10,15 +10,10 @@ namespace DaySeven
             var projectDirectory = Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..\\..\\..\\"));
             var dataDirectory = Path.Combine(projectDirectory, @"data", "IntCodeProgram.txt");
 
-            var computer = new IntCodeComputer();
-            var intCodeProgram = computer.ReadInIntCodeProgram(dataDirectory);
             var thrustBot = new ThrustBot();
-            var result = thrustBot.Run(computer, intCodeProgram);
+            var result = thrustBot.Run(dataDirectory, true);
 
             Console.WriteLine(result);
-
-
-            //zConsole.WriteLine(value);
         }
     }
 }

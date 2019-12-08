@@ -7,26 +7,29 @@ namespace DaySeven
     public class IntCodeComputer
     {
         private int[] _intCodeProgram;
-        private int _instructionPointer;
+        private int _instructionPointer = 0;
         private readonly Instruction _instruction = new Instruction();
-        private IIntCodeComputerBot _bot;
-        public int _input;
-        public int _output;
-        
+        private readonly IIntCodeComputerBot _bot;
+        private int _inputValue;
 
+        public IntCodeComputer()
+        {
+        }
+
+        public IntCodeComputer(string path, IIntCodeComputerBot bot = null)
+        {
+            ReadInIntCodeProgram(path);
+            _bot = bot;
+        }
 
         public int[] ReadInIntCodeProgram(string path){
             var lines = File.ReadLines(path).ToList();
-            var intCodeProgram = lines?[0].Split(',').Select(i => Convert.ToInt32(i)).ToArray();
-            return intCodeProgram;
+            _intCodeProgram = lines?[0].Split(',').Select(i => Convert.ToInt32(i)).ToArray();
+            return _intCodeProgram;
         }
 
-        public int Run(int[] intCodeProgram, int instructionPointer = 0, IIntCodeComputerBot bot = null)
+        public int Run()
         {
-            _intCodeProgram = intCodeProgram;
-            _instructionPointer = instructionPointer;
-            _bot = bot;
-
             while (true)
             {
                 SetInstruction();
@@ -84,9 +87,8 @@ namespace DaySeven
 
         private void Input()
         {
-   
             ReadInput();
-            SetValue(1,  _input);
+            SetValue(1, _inputValue);
             _instructionPointer += 2;
         }
 
@@ -144,10 +146,9 @@ namespace DaySeven
 
         private void ReadInput(bool invalidInput = false)
         {
-            Console.WriteLine(!invalidInput ? "Input data:" : "Invalid Data! input data:");
-
             if (_bot == null)
             {
+                Console.WriteLine(!invalidInput ? "Input data:" : "Invalid Data! input data:");
                 var input = Console.ReadLine();
                 if (input == null)
                 {
@@ -155,12 +156,12 @@ namespace DaySeven
                 }
                 else
                 {
-                    _input = int.Parse(input);
+                    _inputValue = int.Parse(input);
                 }
             }
             else
             {
-                _input = _bot.GetInput();
+                _inputValue = _bot.GetInput();
             }
         }
 

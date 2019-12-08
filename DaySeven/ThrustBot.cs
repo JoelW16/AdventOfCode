@@ -13,32 +13,60 @@ namespace DaySeven
         private List<int[]> _phasePermutations;
         
         private int _thrustOutput;
-        private int _phase;
-        private int _inputNumber;
+        private int _ampPhase;
 
 
-
-        public int Run(IntCodeComputer computer, int[] program)
+        public int Run(string dataDirectory, bool feedbackMode = false)
         {
-
             _phasePermutations = new List<int[]>();
-            PhasePermute(new int[]{0, 1, 2, 3, 4}, 0, 4);
+            PhasePermute(feedbackMode ? new int[] {5, 6, 7, 8, 9} : new int[] {0, 1, 2, 3, 4}, 0, 4);
 
             var thrust = new Dictionary<int[], int>();
+
             foreach (var phasePermutation in _phasePermutations)
             {
                 _thrustOutput = 0;
-                foreach (var phase in phasePermutation)
+                var result = 0;
+                var amps = phasePermutation.Select(i => (new IntCodeComputer(dataDirectory, this), i)).ToList();
+                if (!feedbackMode)
                 {
-                    _inputNumber = 0;
-                    _phase = phase;
-                    computer.Run(program, 0, this);
-
+                    RunAmps(ref amps, result);
                 }
+                while (feedbackMode && result == 0)
+                {
+                    result = RunAmps(ref amps, result);
+                }
+
                 thrust.Add(phasePermutation, _thrustOutput);
             }
-
+            //return thrust.FirstOrDefault(f => f.Key == new int[] { 9, 8, 7, 6, 5 }).Value;
             return thrust.Max(i => i.Value);
+        }
+
+        private int RunAmps(ref List<(IntCodeComputer computer, int phase)> amps, int result)
+        {
+            for (var i = 0; i < amps.Count(); i++)
+            {
+                var computer = amps[i].computer;
+                var phase = amps[i].phase;
+                if (phase != -1)
+                {
+                    _ampPhase = phase;
+                    phase = -1;
+                }
+
+                if (i < amps.Count() - 1)
+                {
+                    computer.Run();
+                }
+                else
+                {
+                    result = computer.Run();
+                }
+
+                amps[i] = (computer, phase);
+            }
+            return result;
         }
 
         private static int[] Swap(int[] phases, int indexA, int indexB)
@@ -71,16 +99,15 @@ namespace DaySeven
 
         public int GetInput()
         {
-            switch (_inputNumber)
+            if (_ampPhase != -1)
             {
-                case 0:
-                    _inputNumber = 1;
-                    return _phase;
-                case 1:
-                    _inputNumber = 0;
-                    return _thrustOutput;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var phase = _ampPhase;
+                _ampPhase = -1;
+                return phase;
+            }
+            else
+            {
+                return _thrustOutput;
             }
         }
 
