@@ -11,6 +11,7 @@ namespace DaySeven
         private readonly Instruction _instruction = new Instruction();
         private readonly IIntCodeComputerBot _bot;
         private int _inputValue;
+        private bool _isRunning;
 
         public IntCodeComputer()
         {
@@ -30,7 +31,8 @@ namespace DaySeven
 
         public int Run()
         {
-            while (true)
+            _isRunning = true;
+            while (_isRunning)
             {
                 SetInstruction();
                 switch (_instruction.Opcode)
@@ -65,6 +67,7 @@ namespace DaySeven
                         throw new ArgumentOutOfRangeException();
                 }
             }
+            return 0;
         }
 
         private void SetInstruction()
@@ -97,6 +100,7 @@ namespace DaySeven
             Console.WriteLine(GetValue(1));
             _bot?.SetOutput(GetValue(1));
             _instructionPointer += 2;
+            if (_bot != null) _isRunning = false;
         }
 
         private void JumpTrue()

@@ -11,9 +11,11 @@ namespace DaySeven
             var dataDirectory = Path.Combine(projectDirectory, @"data", "IntCodeProgram.txt");
 
             var thrustBot = new ThrustBot();
-            var result = thrustBot.Run(dataDirectory, true);
+            
+            var resultPart1 = thrustBot.Run(dataDirectory);
+            var resultPart2 = thrustBot.Run(dataDirectory, true);
 
-            Console.WriteLine(result);
+            Console.WriteLine($"Part 1:{resultPart1} \nPart 2:{resultPart2}");
         }
     }
 }

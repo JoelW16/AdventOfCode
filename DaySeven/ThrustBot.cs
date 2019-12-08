@@ -39,7 +39,6 @@ namespace DaySeven
 
                 thrust.Add(phasePermutation, _thrustOutput);
             }
-            //return thrust.FirstOrDefault(f => f.Key == new int[] { 9, 8, 7, 6, 5 }).Value;
             return thrust.Max(i => i.Value);
         }
 
@@ -95,7 +94,6 @@ namespace DaySeven
                 }
             }
         }
-
 
         public int GetInput()
         {
