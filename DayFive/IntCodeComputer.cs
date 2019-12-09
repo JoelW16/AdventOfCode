@@ -191,9 +191,9 @@ namespace DayFive
             return _intCodeProgram[GetPointer(instructionPointer)];
         }
 
-        private int SetPointer(int instructionPointer, int value)
+        private void SetPointer(int instructionPointer, int value)
         {
-            return _intCodeProgram[instructionPointer];
+            _intCodeProgram[instructionPointer] = value;
         }
 
         private void SetPointerValue(int instructionPointer, int value)

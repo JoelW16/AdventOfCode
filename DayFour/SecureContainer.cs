@@ -43,7 +43,7 @@ namespace DayFour
 
         private static bool HasTwoAdjacentDigits(string sortedPassword)
         {
-            return sortedPassword.GroupBy(digit => digit).Count(c => c.Count() > 1) > 0;
+            return sortedPassword.GroupBy(digit => digit).Count(c => c.Count() == 2) > 0;
         }
     }
 }

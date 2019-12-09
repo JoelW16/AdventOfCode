@@ -2,34 +2,40 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace DaySeven
+namespace DayNine
 {
     public class IntCodeComputer
     {
-        private int[] _intCodeProgram;
-        private int _instructionPointer = 0;
+        private long[] _intCodeProgram;
+        private long _instructionPointer = 0; 
+        private long _relativeBase = 0;
         private readonly Instruction _instruction = new Instruction();
         private readonly IIntCodeComputerBot _bot;
-        private int _inputValue;
+        private long _inputValue;
         private bool _isRunning;
 
         public IntCodeComputer()
         {
         }
 
-        public IntCodeComputer(string path, IIntCodeComputerBot bot = null)
+        public IntCodeComputer(string path, IIntCodeComputerBot bot = null )
         {
             ReadInIntCodeProgram(path);
             _bot = bot;
         }
 
-        public int[] ReadInIntCodeProgram(string path){
+        public long[] ReadInIntCodeProgram(string path){
             var lines = File.ReadLines(path).ToList();
-            _intCodeProgram = lines?[0].Split(',').Select(i => Convert.ToInt32(i)).ToArray();
+            _intCodeProgram = lines?[0].Split(',').Select(long.Parse).ToArray();
             return _intCodeProgram;
         }
 
-        public int Run()
+        public void AddMemory(int size)
+        {
+            Array.Resize<long>(ref _intCodeProgram, _intCodeProgram.Length + size);
+        }
+
+        public long Run()
         {
             _isRunning = true;
             while (_isRunning)
@@ -60,6 +66,9 @@ namespace DaySeven
                         break;
                     case Opcode.Equals:
                         Equals();
+                        break;
+                    case Opcode.RelativeBaseOffset:
+                        RelativeBaseOffset();
                         break;
                     case Opcode.Halt:
                         return Halt();
@@ -141,8 +150,14 @@ namespace DaySeven
             _instructionPointer += 4;
         }
 
+        private void RelativeBaseOffset()
+        {
+            _relativeBase += GetValue(1);
+            _instructionPointer += 2;
+        }
 
-        private int Halt()
+
+        private long Halt()
         {
             return _intCodeProgram[0];
         }
@@ -168,7 +183,7 @@ namespace DaySeven
             }
         }
 
-        private int GetValue(int paramNumber)
+        private long GetValue(long paramNumber)
         {
             var mode = _instruction.GetMode(paramNumber);
 
@@ -178,12 +193,14 @@ namespace DaySeven
                     return GetPointerValue(_instructionPointer + paramNumber);
                 case 1:
                     return GetPointer(_instructionPointer + paramNumber);
+                case 2:
+                    return GetPointerValue(_instructionPointer + paramNumber, _relativeBase);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private void SetValue(int paramNumber, int value)
+        private void SetValue(long paramNumber, long value)
         {
             var mode = _instruction.GetMode(paramNumber);
 
@@ -195,28 +212,32 @@ namespace DaySeven
                 case 1:
                     SetPointer(_instructionPointer + paramNumber, value);
                     break;
+                case 2:
+                    SetPointerValue(_instructionPointer + paramNumber, value, _relativeBase);
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
         }
 
-        private int GetPointer(int instructionPointer)
+        private long GetPointer(long instructionPointer)
         {
             return _intCodeProgram[instructionPointer];
         }
 
-        private int GetPointerValue(int instructionPointer){
-            return _intCodeProgram[GetPointer(instructionPointer)];
+        private long GetPointerValue(long instructionPointer, long relativeBase = 0){
+            return _intCodeProgram[GetPointer(instructionPointer) + relativeBase];
         }
 
-        private void SetPointer(int instructionPointer, int value)
+
+        private void SetPointer(long instructionPointer, long value)
         {
             _intCodeProgram[instructionPointer] = value;
         }
 
-        private void SetPointerValue(int instructionPointer, int value)
+        private void SetPointerValue(long instructionPointer, long value, long relativeBase = 0)
         {
-            _intCodeProgram[GetPointer(instructionPointer)] = value;
+            _intCodeProgram[GetPointer(instructionPointer) + relativeBase] = value;
         }
     }
 }
