@@ -35,160 +35,71 @@ namespace DayTen
         {
             for (var i = 0; i < _asteroids.Count; i ++)
             {
-                var (key, _) = _asteroids.ElementAt(i);
-                _asteroids[key] = NumberInLineOfSight(AsteroidsLocations(key));
+                var (a, _) = _asteroids.ElementAt(i);
+                var ast = MapAsteroidsFrom(a);
+                _asteroids[a] = ast.Select(i => i.Angle).Distinct().Count();
             }
 
             return _asteroids.Aggregate((l, r) => l.Value > r.Value ? l : r);
         }
 
-        private static int NumberInLineOfSight(List<Dictionary<(int, int), decimal>> asteroidLocations)
-        {
-            return asteroidLocations.Sum(asteroidLocation => asteroidLocation.Values.Distinct().Count());
-        }
 
-        private List<Dictionary<(int, int), decimal>> AsteroidsLocations((int x, int y) a)
+        private List<Asteroid> MapAsteroidsFrom((int x, int y) a)
         {
-            var viewPointPositiveGradients = new Dictionary<(int, int), decimal>();
-            var viewPointNegativeGradients = new Dictionary<(int, int), decimal>();
-            var viewPointHorizontal = new Dictionary<(int, int), decimal>();
-            var viewPointVertical = new Dictionary<(int, int), decimal>();
-
+            List<Asteroid> ast = new List<Asteroid>();
             foreach (var (b, _) in _asteroids)
             {
+
                 if (a == b) continue;
-                //Check if Vertical or Horizontal
-                var dy = (b.y - a.y);
-                var sy = (a.y > b.y) ? 1 : -1;
-                var dx = (b.x - a.x);
-                var sx = (a.x > b.x) ? 1 : -1;
+                float xDiff = b.x - a.x;
+                float yDiff = a.y - b.y;
+                var rads = Math.Atan2(xDiff, yDiff);
+                
+                var compassDeg = (180 / Math.PI) * rads;
+                double normaliseDeg(double a) => ((a % 360) + 360) % 360;
 
-                if (dy == 0)
-                {
-                    viewPointHorizontal.Add(b, sx);
-                    continue;
-                }
-                if(dx == 0)
-                {
-                    viewPointVertical.Add(b, sy);
-                    continue;
-                }
+                var angle = normaliseDeg(compassDeg);
 
-                //Get Gradients
-                var gradient = (decimal)dy / dx;
-
-                if (sy == 1)
-                {
-                    viewPointPositiveGradients.Add(b, gradient);
-                }
-                else
-                {
-                    viewPointNegativeGradients.Add(b, gradient);
-                }
+                ast.Add(new Asteroid {Coordinates = b, Angle = angle});
             }
-            var asteroids = new List<Dictionary<(int, int), decimal>>
-            {
-                viewPointVertical, viewPointPositiveGradients, viewPointHorizontal, viewPointNegativeGradients
-            };
-            return asteroids;
+
+            return ast;
         }
 
-
-
-        public List<(int, int)> GetVaporiseAsteroidManifest((int, int) asteroidBase)
+        
+        public List<Asteroid> GetVaporiseAsteroidManifest((int x, int y) asteroidBase)
         {
-            var isNorth = true;
-            var isEast = true;
+            var manifest = new List<Asteroid>();
+            var asteroids = MapAsteroidsFrom(asteroidBase).OrderBy(i => i.Angle)
+                .ThenBy(i => Math.Abs(asteroidBase.x - i.Coordinates.x) + Math.Abs(asteroidBase.y - i.Coordinates.y))
+                .ToList();
 
-            var manifest = new List<(int, int)>();
-            List<Dictionary<(int, int), decimal>> asteroidLocations = AsteroidsLocations(asteroidBase);
-
-            var vertical = asteroidLocations[0];
-            var positiveGradients = asteroidLocations[1];
-            var horizontal = asteroidLocations[2];
-            var negativeGradients = asteroidLocations[3];
-
-            var count = positiveGradients.Count() + vertical.Count() + horizontal.Count() + negativeGradients.Count();
-
-            while (count > 0)
+            while (asteroids.Any())
             {
-                if (isNorth)
+                var previousHeading = 360d;
+                for (var i = 0; i < asteroids.Count(); i++)
                 {
-                    //Get North
-                    var asteroid = vertical.OrderByDescending(i => i.Key.Item2).FirstOrDefault(i => i.Value > 0);
-                    DestroyAsteroid(asteroid.Key, ref manifest, ref vertical, ref count);
-
-                    Dictionary<(int, int), decimal> asteroids = null;
-                    if (isEast)
-                    {
-                        //North East
-                        asteroids = positiveGradients.OrderBy(i => i.Value).ThenBy().Where(i => i.Value > 0).ToDictionary(i => i.Key, i => i.Value);
-                        DestroyAsteroids(asteroids, ref manifest, ref positiveGradients, ref count);
-
-
-                        //Get East
-                        asteroid = horizontal.OrderByDescending(i => i.Key.Item2).FirstOrDefault(i => i.Value < 0);
-                        DestroyAsteroid(asteroid.Key, ref manifest, ref vertical, ref count);
-                        isNorth = false;
-                    }
-                    else
-                    {
-                        //North West
-                        asteroids = positiveGradients.OrderByDescending(i => i.Value).Where(i => i.Value < 0).ToDictionary(i => i.Key, i => i.Value);
-                        DestroyAsteroids(asteroids, ref manifest, ref positiveGradients, ref count);
-                        isEast = true;
-                    }
-                }
-                else
-                {
-                    KeyValuePair<(int, int), decimal> asteroid;
-                    Dictionary<(int, int), decimal> asteroids = null;
-                    if (isEast)
-                    {
-                        //South East
-                        asteroids = negativeGradients.OrderBy(i => i.Value).Where(i => i.Value < 0).ToDictionary(i => i.Key, i => i.Value);
-                        DestroyAsteroids(asteroids, ref manifest, ref negativeGradients, ref count);
-
-                        //Get South
-                        asteroid = vertical.OrderBy(i => i.Key.Item2).FirstOrDefault(i => i.Value < 0);
-                        DestroyAsteroid(asteroid.Key, ref manifest, ref vertical, ref count);
-                        isEast = false;
-                        
-                    }
-                    else
-                    {
-                        //South West
-                        asteroids = negativeGradients.OrderByDescending(i => i.Value).Where(i => i.Value > 0).ToDictionary(i => i.Key, i => i.Value);
-                        DestroyAsteroids(asteroids, ref manifest, ref negativeGradients, ref count);
-
-                        //Get West
-                        asteroid = horizontal.OrderByDescending(i => i.Key.Item1).FirstOrDefault(i => i.Value > 0);
-                        DestroyAsteroid(asteroid.Key, ref manifest, ref horizontal, ref count);
-                        isNorth = true;
-                    }
+                    var asteroid = asteroids[i];
+                    if(Math.Abs(asteroid.Angle - previousHeading) < double.Epsilon) continue;
+                    previousHeading = asteroid.Angle;
+                    manifest.Add(asteroid);
+                    asteroids.Remove(asteroid);
+                    i--;
                 }
             }
             return manifest;
         }
+    }
 
-        private void DestroyAsteroids(Dictionary<(int, int), decimal> asteroids, ref List<(int, int)> manifest, ref Dictionary<(int, int), decimal> dictionary, ref int count)
+    public class Asteroid
+    {
+        public double Angle { get; set; }
+        public (int x, int y) Coordinates { get; set; }
+
+        public override string ToString()
         {
-            decimal previous = 0;
-            for (var i = 0; i < asteroids.Count; i++)
-            {
-                var (key, value) = asteroids.ElementAt(i);
-                if (value == previous) continue;
-
-                previous = value;
-                DestroyAsteroid(key, ref manifest, ref dictionary, ref count);
-            }
-        }
-
-        private void DestroyAsteroid((int, int) asteroid, ref List<(int, int)> manifest, ref Dictionary<(int, int), decimal> list, ref int count)
-        {
-            manifest.Add(asteroid);
-            list.Remove(asteroid);
-            count--;
+            return $"{Coordinates.x},{Coordinates.y}: {Angle}";
         }
     }
+
 }
