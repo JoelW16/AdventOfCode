@@ -10,6 +10,10 @@ namespace DayTwelve
     {
         private int _ticks;
         private List<Moon> _moons;
+        private HashSet<(int, int, int, int, int, int, int, int)> _xTicks;
+        private HashSet<(int, int, int, int, int, int, int, int)> _yTicks;
+        private HashSet<(int, int, int, int, int, int, int, int)> _zTicks;
+
 
         public OrbitSimulation(string path)
         {
@@ -33,6 +37,7 @@ namespace DayTwelve
         public int Run(int ticks)
         {
             _ticks = ticks;
+            
             while (_ticks > 0)
             { 
                 SimulateTick();
@@ -40,6 +45,92 @@ namespace DayTwelve
             }
 
             return GetTotalEnergy();
+        }
+
+        public long RunFindPeriod()
+        {
+            _ticks = 0;
+            _xTicks = new HashSet<(int, int, int, int, int, int, int, int)>();
+            _yTicks = new HashSet<(int, int, int, int, int, int, int, int)>();
+            _zTicks = new HashSet<(int, int, int, int, int, int, int, int)>();
+            while (!FoundAllPeriods())
+            {
+                SimulateTick();
+                _ticks++;
+            }
+
+            var l = FindLowestCommonPeriod();
+            return l;
+        }
+
+
+        private long FindLowestCommonPeriod()
+        {
+            var periods = new long[]
+            {
+                _xTicks.Count,
+                _yTicks.Count,
+                _zTicks.Count,
+            };
+
+            return periods.Aggregate(lcm);
+        }
+
+        static long lcm(long a, long b)
+        {
+            return Math.Abs(a * b) / GCD(a, b);
+        }
+        static long GCD(long a, long b)
+        {
+            return b == 0 ? a : GCD(b, a % b);
+        }
+
+        private bool FoundAllPeriods()
+        {
+            var hasXPeriod = HasXPeriod();
+            var hasYPeriod = HasYPeriod();
+            var hasZPeriod = HasZPeriod();
+
+            return hasXPeriod && hasYPeriod && hasZPeriod;
+        }
+
+        private bool HasXPeriod()
+        {
+            var tick = (_moons[0].Position.x, _moons[1].Position.x, _moons[2].Position.x, _moons[3].Position.x,
+                _moons[0].Velocity.x, _moons[1].Velocity.x, _moons[2].Velocity.x, _moons[3].Velocity.x);
+
+            if (_xTicks.Contains(tick))
+            {
+                return true;
+            }
+            _xTicks.Add(tick);
+            return false;
+        }
+
+        private bool HasYPeriod()
+        {
+            var tick = (_moons[0].Position.y, _moons[1].Position.y, _moons[2].Position.y, _moons[3].Position.y,
+                _moons[0].Velocity.y, _moons[1].Velocity.y, _moons[2].Velocity.y, _moons[3].Velocity.y);
+
+            if (_yTicks.Contains(tick))
+            {
+                return true;
+            }
+            _yTicks.Add(tick);
+            return false;
+        }
+
+        private bool HasZPeriod()
+        {
+            var tick = (_moons[0].Position.z, _moons[1].Position.z, _moons[2].Position.z, _moons[3].Position.z,
+                _moons[0].Velocity.z, _moons[1].Velocity.z, _moons[2].Velocity.z, _moons[3].Velocity.z);
+
+            if (_zTicks.Contains(tick))
+            {
+                return true;
+            }
+            _zTicks.Add(tick);
+            return false;
         }
 
         private void SimulateTick()
@@ -62,7 +153,7 @@ namespace DayTwelve
 
             foreach (var moon in _moons)
             {
-                moon.UpdatePosition();
+                moon.UpdatePosition(_ticks);
             }
         }
 

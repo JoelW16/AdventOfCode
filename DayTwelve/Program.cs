@@ -11,9 +11,11 @@ namespace DayTwelve
             var dataDirectory = Path.Combine(projectDirectory, @"data", "moons.txt");
 
             var orbitSimulation = new OrbitSimulation(dataDirectory);
-            var energy = orbitSimulation.Run(1000);
+//            var energy = orbitSimulation.Run(1000);
 
-            Console.WriteLine(energy);
+            orbitSimulation.RunFindPeriod();
+
+            //Console.WriteLine(energy);
 
         }
     }
