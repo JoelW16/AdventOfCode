@@ -9,7 +9,7 @@ namespace DayTwelve
     public class OrbitSimulation
     {
         private int _ticks;
-        private List<Moon> _moons;
+        private readonly List<Moon> _moons;
         private HashSet<(int, int, int, int, int, int, int, int)> _xTicks;
         private HashSet<(int, int, int, int, int, int, int, int)> _yTicks;
         private HashSet<(int, int, int, int, int, int, int, int)> _zTicks;
@@ -31,6 +31,14 @@ namespace DayTwelve
                     .ToArray();
                 var moon = new Moon(position);
                 _moons.Add(moon);
+            }
+        }
+
+        public void Reset()
+        {
+            foreach (var moon in _moons)
+            {
+                moon.Reset();
             }
         }
 
@@ -59,10 +67,8 @@ namespace DayTwelve
                 _ticks++;
             }
 
-            var l = FindLowestCommonPeriod();
-            return l;
+            return FindLowestCommonPeriod();
         }
-
 
         private long FindLowestCommonPeriod()
         {
@@ -73,16 +79,17 @@ namespace DayTwelve
                 _zTicks.Count,
             };
 
-            return periods.Aggregate(lcm);
+            return periods.Aggregate(Lcm);
         }
 
-        static long lcm(long a, long b)
+        private long Lcm(long a, long b)
         {
-            return Math.Abs(a * b) / GCD(a, b);
+            return Math.Abs(a * b) / Gcd(a, b);
         }
-        static long GCD(long a, long b)
+
+        private long Gcd(long a, long b)
         {
-            return b == 0 ? a : GCD(b, a % b);
+            return b == 0 ? a : Gcd(b, a % b);
         }
 
         private bool FoundAllPeriods()

@@ -8,18 +8,19 @@ namespace DayTwelve
     {
         public (int x, int y, int z) Position;
         public (int x, int y, int z) Velocity;
-        public int XPeriod { get; set; }
-        public int YPeriod { get; set; }
-        public int ZPeriod { get; set; }
 
-        private (int x, int y, int z) _startPosition;
-
-
+        private readonly (int x, int y, int z) _startPosition;
 
         public Moon(int[] position)
         {
             _startPosition = (position[0], position[1], position[2]);
             Position = (position[0], position[1], position[2]);
+        }
+
+        public void Reset()
+        {
+            Position = _startPosition;
+            Velocity = (0, 0, 0);
         }
 
         public void AdjustVelocity((int x, int y, int z) velocity)
@@ -34,8 +35,6 @@ namespace DayTwelve
             Position.x += Velocity.x;
             Position.y += Velocity.y;
             Position.z += Velocity.z;
-
-            if(!HasAllPeriods()) UpdateAxisPeriod(tick+1);
         }
 
         public int GetTotalEnergy()
@@ -46,26 +45,5 @@ namespace DayTwelve
             return pos * kin;
         }
 
-        public bool HasAllPeriods()
-        {
-            var a = XPeriod > 0 && YPeriod > 0 && ZPeriod > 0 ;
-            return a;
-        }
-
-        private void UpdateAxisPeriod(int tick)
-        {
-            if (Position.x == _startPosition.x && Velocity.x == 0 && XPeriod == 0)
-            {
-                XPeriod = tick;
-            }
-            if (Position.y == _startPosition.y && Velocity.y == 0 && YPeriod == 0)
-            {
-                YPeriod = tick;
-            }
-            if (Position.z == _startPosition.z && Velocity.z == 0 && ZPeriod == 0)
-            {
-                ZPeriod = tick;
-            }
-        }
     }
 }
